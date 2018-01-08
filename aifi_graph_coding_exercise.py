@@ -25,10 +25,34 @@ def loop_exists(edges):
         return False
 
 
-def find_loops_from_start_vertex(start_vertex, edges, edges_visited_this_traversal=set(),
+def find_loops_from_start_vertex(start_vertex,
+                                 all_edges,
+                                 edges_visited_this_traversal=set(),
                                  edges_visited_this_path=set()):
-    """Traverse subgraph starting at `start_vertex`, checking for cycles"""
-    edges_starting_at_vertex = [edge for edge in edges
+    """Traverse subgraph starting at `start_vertex`, checking for cycles
+
+    This function iterates through all paths starting from `start_vertex`,
+        logging visited edges in the set `edges_visited_this_traversal` and
+        checking whether any path contains a cycle.
+
+    Parameters
+    ----------
+        start_vertex : vertex at which to start traversal
+        all_edges : set of all edges in the graph
+        edges_visited_this_traversal : set containing edges that have been
+            visited since this traversal begin (i.e., since this function was
+            first called from `loop_exists`)
+        edges_visited_this_path : set of edges defining the current path
+
+    Returns
+    -------
+        edges_visited_this_traversal : set of edges, indicating which edges
+            have been traversed by the time the function returns
+        loop_found : bool, indicating whether the edges reachable from
+            `start_vertex` together with `edges_visited_this_path` contain a
+            cycle
+    """
+    edges_starting_at_vertex = [edge for edge in all_edges
                                 if edge[0] == start_vertex]
     for edge in edges_starting_at_vertex:
         edges_visited_this_traversal = edges_visited_this_traversal | {edge}
@@ -38,7 +62,7 @@ def find_loops_from_start_vertex(start_vertex, edges, edges_visited_this_travers
             edges_visited_this_traversal, loop_found = (
                 find_loops_from_start_vertex(
                     edge[1],
-                    edges,
+                    all_edges,
                     edges_visited_this_traversal=edges_visited_this_traversal,
                     edges_visited_this_path=edges_visited_this_path | {edge}
                 )
