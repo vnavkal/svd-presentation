@@ -25,20 +25,27 @@ def loop_exists(edges):
         return False
 
 
-def find_loops_from_start_vertex(start_vertex, edges, edges_found=set()):
+def find_loops_from_start_vertex(start_vertex, edges, edges_visited_this_traversal=set(),
+                                 edges_visited_this_path=set()):
     """Traverse subgraph starting at `start_vertex`, checking for cycles"""
     edges_starting_at_vertex = [edge for edge in edges
                                 if edge[0] == start_vertex]
     for edge in edges_starting_at_vertex:
-        if edge in edges_found:
-            return edges_found, True  # found a cycle
+        edges_visited_this_traversal = edges_visited_this_traversal | {edge}
+        if edge in edges_visited_this_path:
+            return edges_visited_this_traversal, True  # found a cycle
         else:
-            edges_found = edges_found | {edge}
-            edges_found, loop_found = (
-                find_loops_from_start_vertex(edge[1], edges, edges_found))
+            edges_visited_this_traversal, loop_found = (
+                find_loops_from_start_vertex(
+                    edge[1],
+                    edges,
+                    edges_visited_this_traversal=edges_visited_this_traversal,
+                    edges_visited_this_path=edges_visited_this_path | {edge}
+                )
+            )
             if loop_found:  # subgraph traversal found a cycle
-                return edges_found, True
-    return edges_found, False
+                return edges_visited_this_traversal, True
+    return edges_visited_this_traversal, False
 
 
 class TestLoopExists(unittest.TestCase):
