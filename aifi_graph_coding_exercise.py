@@ -94,11 +94,9 @@ class TestCycleExists(unittest.TestCase):
         self.assertTrue(cycle_exists(edges))
 
     def test_complicated_cyclefree_graph(self):
-        edges = {('U', 'V'), ('V', 'W'), ('X', 'W'),
-                 ('Y', 'W'), ('Y', 'X'), ('W', 'Z')}
+        edges = {(x, y) for x in range(10) for y in range(x+1, 20)}
         self.assertFalse(cycle_exists(edges))
 
     def test_complicated_graph_with_cycle(self):
-        edges = {('U', 'V'), ('V', 'W'), ('X', 'W'),
-                 ('Y', 'W'), ('Y', 'X'), ('W', 'U')}
+        edges = {(x, y) for x in range(10) for y in range(x+1, 20)} | {(15, 2)}
         self.assertTrue(cycle_exists(edges))
