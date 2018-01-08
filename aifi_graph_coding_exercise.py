@@ -27,47 +27,46 @@ def cycle_exists(edges):
 
 def find_cycles_from_start_vertex(start_vertex,
                                   all_edges,
-                                  edges_visited_this_traversal=set(),
-                                  edges_visited_this_path=set()):
+                                  current_path=set()):
     """Traverse subgraph starting at `start_vertex`, checking for cycles
 
     This function iterates through all paths starting from `start_vertex`,
         logging visited edges in the set `edges_visited_this_traversal` and
-        checking whether any path contains a cycle.
+        checking whether any path can be appended to `current_path` to create
+        a path with a cycle
 
     Parameters
     ----------
         start_vertex : vertex at which to start traversal
         all_edges : set of all edges in the graph
-        edges_visited_this_traversal : set containing edges that have been
-            visited since this traversal begin (i.e., since this function was
-            first called from `cycle_exists`)
-        edges_visited_this_path : set of edges defining the current path
+        current_path : set of edges in the current path
 
     Returns
     -------
         edges_visited_this_traversal : set of edges, indicating which edges
             have been traversed by the time the function returns
-        cycle_found : bool, indicating whether the edges reachable from
-            `start_vertex` together with `edges_visited_this_path` contain a
+        cycle_found : bool, indicating whether the union of
+            {edges reachable from `start_vertex`} and `current_path` contains a
             cycle
     """
+    edges_visited_this_traversal = set()
     edges_starting_at_vertex = [edge for edge in all_edges
                                 if edge[0] == start_vertex]
+
     for edge in edges_starting_at_vertex:
-        edges_visited_this_traversal = edges_visited_this_traversal | {edge}
-        if edge in edges_visited_this_path:
-            return edges_visited_this_traversal, True  # found a cycle
+        edges_visited_this_traversal.add(edge)
+        if edge in current_path:
+            return edges_visited_this_traversal, True
         else:
-            edges_visited_this_traversal, cycle_found = (
+            edges_visited_in_subtraversal, cycle_found = (
                 find_cycles_from_start_vertex(
                     edge[1],
                     all_edges,
-                    edges_visited_this_traversal=edges_visited_this_traversal,
-                    edges_visited_this_path=edges_visited_this_path | {edge}
+                    current_path=(current_path | {edge})
                 )
             )
-            if cycle_found:  # subgraph traversal found a cycle
+            edges_visited_this_traversal.update(edges_visited_in_subtraversal)
+            if cycle_found:
                 return edges_visited_this_traversal, True
     return edges_visited_this_traversal, False
 
