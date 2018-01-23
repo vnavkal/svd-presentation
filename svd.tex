@@ -1,0 +1,93 @@
+\documentclass{beamer}
+\usepackage{amsmath}
+
+\setbeamercolor{frametitle}{fg=black}
+\setbeamercolor{structure}{fg=black}
+
+\usetheme{default}
+
+\title{Backpropagation through the Singular Value Decomposition}
+\author{Viraj Navkal}
+\date{}
+
+\begin{document}
+\frame{\titlepage}
+\begin{frame}
+  \frametitle{Singular Value Decomposition}
+  Assume $A \in M_{m\times n}(F)$, with $F = \mathbb{R} \mathrm{\ or\ } \mathbb{C}$. \\~\\
+  Then there is a decomposition $A = USV^*$, with
+  \begin{itemize}
+    \item[1.] $U^*U = I$,
+    \item[2.] $V^*V = I$, and
+    \item[3.] $S$ diagonal with nonnegative real entries.
+  \end{itemize}
+  \vspace{0.5cm}
+  Two possible choices for dimensions:
+  \begin{itemize}
+  \item[1.] \texttt{full\_matrices} false:
+    \begin{itemize}
+    \item[$U$:] $m\times min(m, n)$
+    \item[$V$:] $n\times min(m, n)$
+    \item[$S$:] $min(m, n)\times min(m, n)$
+    \end{itemize}
+  \item[2.] \texttt{full\_matrices} true:
+    \begin{itemize}
+    \item[$U$:] $m\times m$
+    \item[$V$:] $n\times n$
+    \item[$S$:] $m\times n$
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Backgpropagation through SVD in TensorFlow}
+  Initial implementation had some restrictions:
+  \begin{itemize}
+  \item[1.] $F = \mathbb{R}$, not $\mathbb{C}$
+  \item[2.] $|m - n| \leq 1$
+  \item[3.] \texttt{full\_matrices} true
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Backgpropagation through SVD in TensorFlow}
+  Which restrictions can be removed?
+  \begin{itemize}
+  \item[1.] $F = \mathbb{R}$, not $\mathbb{C}$ \\
+    \ \textbf{no} -- indeterminacy when $F = \mathbb{C}$
+  \item[2.] $|m - n| \leq 1$ \\
+    \ \textbf{no}, at least not when \texttt{full\_matrices} true (indeterminacy)
+  \item[3.] \texttt{full\_matrices} true \\
+    \ \textbf{yes} -- in fact, gradient formula is known
+  \end{itemize}
+  \vspace{0.5cm}
+  I implemented backpropagation in TensorFlow when \texttt{full\_matrices} is false, for arbitrary $m$ and $n$.
+\end{frame}
+\begin{frame}
+  \frametitle{Derivation of $dS$}
+  \[\begin{array}{rrl}
+  & A & = USV^* \\
+  \Rightarrow & dA & = dUSV^* + UdSV^* + USdV^* \\
+  \Rightarrow & U^*dAV & = U^*dUS + dS + SdV^*V
+  \end{array}\]
+  Now, $U^*dU$ is skew-Hermitian:
+  \[\begin{array}{rrl}
+  & U^*U & = I \\
+  \Rightarrow & dU^*U + U^*dU & = 0 \\
+  \Rightarrow & (U^*dU)^* + U^*dU & = 0
+  \end{array}\]
+  Let $\circ$ denote the element-wise product.  Then
+  \[\begin{array}{rl}
+  I \circ (U^*dAV) & = I \circ (U^*dUS) + I \circ dS + I \circ (SdV^*V) \\
+  & = dS
+  \end{array}\]
+  Therefore $\boxed{dS = I \circ (U^*dAV)}$.
+\end{frame}
+\begin{frame}
+  \frametitle{One possible application}
+  Nuclear norm cost penalty for regularization or low-rank compression
+\end{frame}
+\begin{frame}
+\frametitle{Closing Question}
+The gradient calculation fails wherever the SVD function is not continuous.  Is it possible to choose a function that is continuous everywhere?
+\end{frame}
+\end{document}
